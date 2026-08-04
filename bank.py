@@ -31,3 +31,5 @@ while choice != 4:
             print(f"The new balance is: {balance}")
     elif choice == 3:
         print(f"Current balance: {balance}")
+    else:
+        print("Invalid menu option.")
