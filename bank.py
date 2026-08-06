@@ -10,7 +10,7 @@ def show_menu():
 
 def deposit(balance):
     amount = float(input("Enter deposit amount: "))
-    if deposit <= 0:
+    if amount <= 0:
         print("Invalid amount.")
     else:
         balance += amount
@@ -29,8 +29,23 @@ def withdraw(balance):
 def check_balance(balance):
     print(f"Current balance: {balance}")
 
+def load_balance():
+    try :
+        with open("balance.txt", "r") as file:
+            balance = float(file.read())
+            return balance
+    except FileNotFoundError:
+        balance = 0.0
+        with open("balance.txt", "w") as file:
+            file.write(str(balance))
+            return balance
+
+def save_balance(balance):
+    with open("balance.txt", "w") as file:
+        file.write(str(balance))
+
 def main():
-    balance = 0.0
+    balance = load_balance()
 
     while True:
         show_menu()
@@ -38,9 +53,11 @@ def main():
         if choice == 1:
             balance = deposit(balance)
             print(f"The new balance is: {balance}")
+            save_balance(balance)
         elif choice == 2:
             balance = withdraw(balance)
             print(f"The new balance is: {balance}")
+            save_balance(balance)
         elif choice == 3:
             check_balance(balance)
         elif choice == 4:
