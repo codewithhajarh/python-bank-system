@@ -1,0 +1,17 @@
+{
+    "Hajar": {
+        "balance": 1000.0,
+        "transactions": [
+            "Deposit: 1000.0",
+            "Withdraw: -200.0",
+            "Transfer from Ahmed: +200.0"
+        ]
+    },
+    "Ahmed": {
+        "balance": 300.0,
+        "transactions": [
+            "Deposit: 500.0",
+            "Transfer to Hajar: -200.0"
+        ]
+    }
+}

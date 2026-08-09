@@ -1,3 +1,5 @@
+import json
+
 class Account:
     def __init__(self, owner, balance):
         self.owner = owner
@@ -67,23 +69,28 @@ class Bank:
 
 def load_accounts():
     accounts = {}
-    try :
-        with open("oop_accounts.txt", "r") as file:
-            for line in file:
-                parts = line.strip().split(",")
-                name = parts[0]
-                balance = float(parts[1])
-                accounts[name] = Account(name, balance)
-            return accounts
+    try:
+        with open("accounts.json", "r") as file:
+            data = json.load(file)
+        for name, account_data in data.items():
+            balance = account_data["balance"]
+            transactions = account_data["transactions"]
+            account = Account(name, balance)
+            account.transactions = transactions
+            accounts[name] = account
     except FileNotFoundError:
-        with open("oop_accounts.txt", "w") as file:
+        with open("accounts.json", "w") as file:
             pass
-            return accounts
+    return accounts
+
 def save_accounts(accounts):
-    with open("oop_accounts.txt", "w") as file:
-        for name, account in accounts.items():
-            line = f"{name},{account.balance}\n"
-            file.write(line)
+    data = {}
+    for name, account in accounts.items():
+            data[name] = {
+                "balance": account.balance, 
+                "transactions": account.transactions}
+    with open("accounts.json", "w") as file:
+        json.dump(data, file, indent = 4)
 
 def menu_logout():
     print("========== PYTHON BANK ==========")
@@ -170,10 +177,11 @@ def main():
                 if name in bank.accounts:
                     other_account = bank.accounts[name]
                     bank.current_account.transfer(other_account, amount)
+                    save_accounts(accounts)
                 else: 
                     print("Invalid account!")
             elif choice == 4:
-                current_account.check_balance()
+                bank.current_account.check_balance()
             elif choice == 5:
                 bank.current_account.show_transactions()
             elif choice == 6:
