@@ -3,3 +3,4 @@ __pycache__/
 .venv/
 oop_accounts.txt
 accounts.txt
+accounts.json
