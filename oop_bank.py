@@ -52,10 +52,20 @@ class Bank:
     def create_account(self, name):
         if name in self.accounts:
             print ("Account already exists.")
-        else: 
-            new_account = Account(name, 0.0)
-            self.accounts[name] = new_account
-            self.current_account = new_account
+        else :
+            response = input("Do you have an interest rate? (Yes/No) ")
+            if response == "Yes":
+                try:
+                    interest_rate = float(input("Enter your interest rate: "))
+                    new_account = SavingAccount(name, 0.0, interest_rate)
+                    self.accounts[name] = new_account
+                    self.current_account = new_account
+                except ValueError:
+                    print("Invalid interest rate!")
+            else :
+                new_account = Account(name, 0.0)
+                self.accounts[name] = new_account
+                self.current_account = new_account
             print("Account created successfully.")
     def login(self, name):
         if name in self.accounts:
@@ -67,6 +77,19 @@ class Bank:
     def logout(self):
         self.current_account = None
 
+class SavingAccount(Account):
+    def __init__(self, owner, balance, interest_rate):
+        super().__init__(owner, balance)
+        self.interest_rate = interest_rate
+    def add_interest(self):
+        self.balance = (1 + self.interest_rate) * self.balance
+    def withdraw(self, amount):
+        if amount > 500:
+            print("Savings account withdrawal limit is 500.")
+        elif amount <= 0:
+            print("Invalid amount!")
+        else:
+            super().withdraw(amount)
 def load_accounts():
     accounts = {}
     try:
@@ -75,20 +98,28 @@ def load_accounts():
         for name, account_data in data.items():
             balance = account_data["balance"]
             transactions = account_data["transactions"]
-            account = Account(name, balance)
+            if "interest_rate" in account_data:
+                interest_rate = account_data["interest_rate"]
+                account = SavingAccount(name, balance, interest_rate)
+            else:
+                account = Account(name, balance)
             account.transactions = transactions
             accounts[name] = account
     except FileNotFoundError:
         with open("accounts.json", "w") as file:
             pass
+
     return accounts
 
 def save_accounts(accounts):
     data = {}
     for name, account in accounts.items():
-            data[name] = {
-                "balance": account.balance, 
-                "transactions": account.transactions}
+        data[name] = {
+            "balance": account.balance, 
+            "transactions": account.transactions
+            }
+        if isinstance(account, SavingAccount):
+            data[name]["interest_rate"] = account.interest_rate
     with open("accounts.json", "w") as file:
         json.dump(data, file, indent = 4)
 
@@ -110,8 +141,9 @@ def menu_login(current_account):
     print("3. Transfer")
     print("4. Check balance")
     print("5. Transactions")
-    print("6. Logout")
-    print("7. Exit")
+    print("6. Add interst rate")
+    print("7. Logout")
+    print("8. Exit")
     print("")
     print("=================================")
 
@@ -185,8 +217,15 @@ def main():
             elif choice == 5:
                 bank.current_account.show_transactions()
             elif choice == 6:
-                bank.logout()
+                if isinstance(bank.current_account, SavingAccount):
+                    bank.current_account.add_interest()
+                    print(f"Interest added! New balance: {bank.current_account.balance}")
+                    save_accounts(accounts)
+                else:
+                    print("This account don't own an interest!")
             elif choice == 7:
+                bank.logout()
+            elif choice == 8:
                 print(f"Thank you for using Python Bank.")
                 break
             else:
