@@ -22,7 +22,7 @@ When an account is logged in, you can:
 - logout
 - Exit the application
 
-Account Types
+## Accounts type
 
 The application currently supports:
 
@@ -37,3 +37,7 @@ Saving Account
 - Has an interest rate
 - Can earn interest
 - Has a maximum withdrawal limit of 500
+
+Checking Account
+- Inherits from Account
+- Has a transaction fee
