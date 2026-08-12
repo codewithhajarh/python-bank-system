@@ -14,11 +14,14 @@ class Account:
     def withdraw(self, amount):
         if amount <= 0:
             print("Invalid amount.")
+            return False
         elif amount > self.balance:
             print("Insufficient funds.")
+            return False
         else:
             self.balance -= amount
             self.transactions.append(f"Withdraw: -{amount}")
+            return True
     def transfer(self, other_account, amount):
         if other_account.owner == self.owner :
             print("Invalid account")
@@ -63,9 +66,19 @@ class Bank:
                 except ValueError:
                     print("Invalid interest rate!")
             else :
-                new_account = Account(name, 0.0)
-                self.accounts[name] = new_account
-                self.current_account = new_account
+                response = input("Do you have a transaction fee? (Yes/No) ")
+                if response == "Yes":
+                    try:
+                        transaction_fee = float(input("Enter your transaction fee: "))
+                        new_account = CheckingAccount(name, 0.0, transaction_fee)
+                        self.accounts[name] = new_account
+                        self.current_account = new_account
+                    except ValueError:
+                         print("Invalid transaction fee!")
+                else: 
+                    new_account = Account(name, 0.0)
+                    self.accounts[name] = new_account
+                    self.current_account = new_account
             print("Account created successfully.")
     def login(self, name):
         if name in self.accounts:
@@ -90,6 +103,21 @@ class SavingAccount(Account):
             print("Invalid amount!")
         else:
             super().withdraw(amount)
+
+class CheckingAccount(Account):
+    def __init__(self, owner, balance, transaction_fee):
+        super().__init__(owner, balance)
+        self.transaction_fee = transaction_fee
+    def withdraw(self, amount):
+        if amount <= 0:
+            print("Invalid amount!")
+        elif amount + self.transaction_fee > self.balance :
+            print("Invalid amount!")
+        else:
+            if super().withdraw(amount):
+                self.balance -= self.transaction_fee
+                self.transactions.append(f"Withdrawal fee: -{self.transaction_fee}")
+
 def load_accounts():
     accounts = {}
     try:
@@ -101,6 +129,9 @@ def load_accounts():
             if "interest_rate" in account_data:
                 interest_rate = account_data["interest_rate"]
                 account = SavingAccount(name, balance, interest_rate)
+            elif "transaction_fee" in account_data:
+                transaction_fee = account_data["transaction_fee"]
+                account = CheckingAccount(name, balance, transaction_fee)
             else:
                 account = Account(name, balance)
             account.transactions = transactions
@@ -120,6 +151,8 @@ def save_accounts(accounts):
             }
         if isinstance(account, SavingAccount):
             data[name]["interest_rate"] = account.interest_rate
+        elif isinstance(account, CheckingAccount):
+            data[name]["transaction_fee"] = account.transaction_fee
     with open("accounts.json", "w") as file:
         json.dump(data, file, indent = 4)
 
