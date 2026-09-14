@@ -8,16 +8,14 @@ def load_accounts():
         with open("accounts.json", "r") as file:
             data = json.load(file)
         for name, account_data in data.items():
-            balance = account_data["balance"]
             transactions = account_data["transactions"]
-            if "interest_rate" in account_data:
-                interest_rate = account_data["interest_rate"]
-                account = SavingAccount(name, balance, interest_rate)
-            elif "transaction_fee" in account_data:
-                transaction_fee = account_data["transaction_fee"]
-                account = CheckingAccount(name, balance, transaction_fee)
+            account_type = account_data["type"]
+            if account_type == "saving":
+                account = SavingAccount.from_dict(account_data)
+            elif account_type == "checking":
+                account = CheckingAccount.from_dict(account_data)
             else:
-                account = Account(name, balance)
+                account = Account.from_dict(account_data)
             account.transactions = transactions
             accounts[name] = account
     except FileNotFoundError:
@@ -30,12 +28,15 @@ def save_accounts(accounts):
     data = {}
     for name, account in accounts.items():
         data[name] = {
+            "owner": account.owner,
             "balance": account.balance, 
-            "transactions": account.transactions
+            "transactions": account.transactions,
+            "type": account.type
             }
-        if isinstance(account, SavingAccount):
+        
+        if account.type == "saving":
             data[name]["interest_rate"] = account.interest_rate
-        elif isinstance(account, CheckingAccount):
+        elif account.type == "checking":
             data[name]["transaction_fee"] = account.transaction_fee
     with open("accounts.json", "w") as file:
         json.dump(data, file, indent = 4)

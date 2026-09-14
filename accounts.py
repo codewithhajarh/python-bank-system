@@ -5,8 +5,12 @@ class InvalidAmountError(Exception):
 class Account:
     def __init__(self, owner, balance):
         self.owner = owner
-        self._balance = balance
+        self.balance = balance
         self.transactions = []
+        self.type = "regular"
+    @classmethod
+    def from_dict(cls, data):
+        return cls(data["owner"], data["balance"])
     @property
     def balance(self):
         return self._balance
@@ -60,7 +64,11 @@ class Account:
 class SavingAccount(Account):
     def __init__(self, owner, balance, interest_rate):
         super().__init__(owner, balance)
+        self.type = "saving"
         self.interest_rate = interest_rate
+    @classmethod
+    def from_dict(cls, data):
+        return cls(data["owner"], data["balance"], data["interest_rate"])
     def add_interest(self):
         self.balance = (1 + self.interest_rate) * self.balance
     def withdraw(self, amount):
@@ -74,7 +82,11 @@ class SavingAccount(Account):
 class CheckingAccount(Account):
     def __init__(self, owner, balance, transaction_fee):
         super().__init__(owner, balance)
+        self.type = "checking"
         self.transaction_fee = transaction_fee
+    @classmethod
+    def from_dict(cls, data):
+        return cls(data["owner"], data["balance"], data["transaction_fee"])
     def withdraw(self, amount):
         if amount <= 0:
             print("Invalid amount!")
