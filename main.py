@@ -1,5 +1,5 @@
 import json
-from accounts import Account, SavingAccount, CheckingAccount
+from accounts import Account, SavingAccount, CheckingAccount, InsufficientFundError, InvalidAmountError
 from bank import Bank
 
 def load_accounts():
@@ -113,9 +113,14 @@ def main():
                 except ValueError:
                     print("Invalid amount.")
                     continue
-                bank.current_account.withdraw(amount)
-                print(f"The new balance is: {bank.current_account.balance}")
-                save_accounts(accounts)
+                try:
+                    bank.current_account.withdraw(amount)
+                    print(f"The new balance is: {bank.current_account.balance}")
+                    save_accounts(accounts)
+                except InsufficientFundError as error:
+                    print(error)
+                except InvalidAmountError as error:
+                    print(error)
             elif choice == 3:
                 name = input("Enter the owner of account you want to transfer to: ")
                 try:

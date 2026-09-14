@@ -1,23 +1,34 @@
+class InsufficientFundError(Exception):
+    pass
+class InvalidAmountError(Exception):
+    pass
 class Account:
     def __init__(self, owner, balance):
         self.owner = owner
-        self.balance = balance
+        self._balance = balance
         self.transactions = []
+    @property
+    def balance(self):
+        return self._balance
+    @balance.setter
+    def balance(self, value):
+        if value < 0:
+            raise InvalidAmountError("Balance can't be négative")
+        self._balance = value
+
     def deposit(self, amount):
         if amount <= 0:
             print("Invalid amount.")
         else:
-            self.balance += amount
+            self.balance = self.balance + amount
             self.transactions.append(f"Deposit: {amount}")
     def withdraw(self, amount):
-        if amount <= 0:
-            print("Invalid amount.")
-            return False
-        elif amount > self.balance:
-            print("Insufficient funds.")
-            return False
+        if amount > self.balance:
+            raise InsufficientFundError("Insufficient funds")
+        elif amount <= 0:
+            raise InvalidAmountError("Invalid amount.")
         else:
-            self.balance -= amount
+            self.balance = self.balance - amount
             self.transactions.append(f"Withdraw: -{amount}")
             return True
     def transfer(self, other_account, amount):
